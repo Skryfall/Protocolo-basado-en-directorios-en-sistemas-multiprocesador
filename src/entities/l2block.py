@@ -1,3 +1,4 @@
+#import entities.block as bl
 import block as bl
 
 class L2Block(bl.Block):

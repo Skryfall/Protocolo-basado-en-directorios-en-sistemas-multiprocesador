@@ -1,4 +1,6 @@
+#import entities.block as bl
 import block as bl
+
 from threading import Lock, Thread
 
 class MemorySingleton(type):
@@ -33,6 +35,30 @@ class Memory(metaclass=MemorySingleton):
                                     6: self.block6,
                                     7: self.block7
                                 }
+
+    def getBlock0(self):
+        return self.block0
+
+    def getBlock1(self):
+        return self.block1
+
+    def getBlock2(self):
+        return self.block2
+
+    def getBlock3(self):
+        return self.block3
+
+    def getBlock4(self):
+        return self.block4
+
+    def getBlock5(self):
+        return self.block5
+
+    def getBlock6(self):
+        return self.block6
+
+    def getBlock7(self):
+        return self.block7
 
     def getBlockByNumber(self, number):
         return self.blocksDictionary.get(number)

@@ -1,3 +1,4 @@
+#import entities.l22wayset as l2set
 import l22wayset as l2set
 
 class L2CacheSingleton(type):
@@ -17,6 +18,12 @@ class L2Cache(metaclass=L2CacheSingleton):
                                     0: self.set0,
                                     1: self.set1
                                 }
+
+    def getSet0(self):
+        return self.set0
+
+    def getSet1(self):
+        return self.set1
 
     def getL2SetByNumber(self, number):
         return self.L2SetsDictionary.get(number)

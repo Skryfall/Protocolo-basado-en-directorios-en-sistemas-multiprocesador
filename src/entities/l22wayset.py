@@ -1,9 +1,10 @@
+#import entities.l2block as l2bl
 import l2block as l2bl
 
 class L22WaySet:
     def __init__(self, number0, number1, l2set):
-        self.l2block0 = l2bl.L2Block(number0, 0, "DI", 0, [], 0)
-        self.l2block1 = l2bl.L2Block(number1, 0, "DI", 0, [], 0)
+        self.l2block0 = l2bl.L2Block(number0, 0, "DI", -1, [], 0)
+        self.l2block1 = l2bl.L2Block(number1, 0, "DI", -1, [], 0)
         self.set = l2set
         self.L2BlocksDictionary = {
                                     0: self.l2block0,
@@ -16,6 +17,12 @@ class L22WaySet:
     def setSet(self, l2set):
         self.set = l2set
         return
+
+    def getBlock0(self):
+        return self.l2block0
+
+    def getBlock1(self):
+        return self.l2block1
 
     def getAllBlocks(self):
         return [self.l2block0, self.l2block1]
