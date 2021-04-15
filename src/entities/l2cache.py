@@ -1,5 +1,5 @@
-#import entities.l22wayset as l2set
-import l22wayset as l2set
+import entities.l22wayset as l2set
+#import l22wayset as l2set
 
 class L2CacheSingleton(type):
     _instances = {}

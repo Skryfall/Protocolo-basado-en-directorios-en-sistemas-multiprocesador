@@ -1,5 +1,5 @@
-#import entities.block as bl
-import block as bl
+import entities.block as bl
+#import block as bl
 
 from threading import Lock, Thread
 

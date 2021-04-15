@@ -1,4 +1,5 @@
-import block as bl
+import entities.block as bl
+#import block as bl
 
 class L1Block(bl.Block):
     def __init__(self, number, data, l1set, coherence, address):

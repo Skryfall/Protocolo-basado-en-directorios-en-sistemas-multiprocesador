@@ -1,7 +1,11 @@
-import l1cache as l1c
-import l2cache as l2c
-import memory as mem
-import l1cachedataholder as l1cHolder
+import entities.l1cache as l1c
+import entities.l2cache as l2c
+import entities.memory as mem
+import entities.l1cachedataholder as l1cHolder
+#import l1cache as l1c
+#import l2cache as l2c
+#import memory as mem
+#import l1cachedataholder as l1cHolder
 
 import random
 import time

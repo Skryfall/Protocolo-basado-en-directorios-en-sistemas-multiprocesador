@@ -1,4 +1,5 @@
-import l1block as l1bl
+import entities.l1block as l1bl
+#import l1block as l1bl
 
 class L1Cache:
     def __init__(self):

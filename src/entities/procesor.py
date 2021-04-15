@@ -1,5 +1,7 @@
-import control as ctrl
-import instructionsholder as instrHolder
+import entities.control as ctrl
+import entities.instructionsholder as instrHolder
+#import control as ctrl
+#import instructionsholder as instrHolder
 
 import time
 from threading import Thread
@@ -94,25 +96,25 @@ class Procesor:
                 else:
                     print("Instrucción no Válida")
 
-def procesor0(number):
-    procesor0 = Procesor(number)
-    procesor0.readOperation()
+#def procesor0(number):
+#    procesor0 = Procesor(number)
+#    procesor0.readOperation()
 
-def procesor1(number):
-    procesor1 = Procesor(number)
-    instrData = instrHolder.InstructionsHolder()
-    time.sleep(5)
-    control1.handleOperation("R", 1, 0, -1)
-    time.sleep(3)
-    print(control1.handleOperation("R", 1, 0, -1))
+#def procesor1(number):
+#    procesor1 = Procesor(number)
+#    instrData = instrHolder.InstructionsHolder()
+#    time.sleep(5)
+#    control1.handleOperation("R", 1, 0, -1)
+#    time.sleep(3)
+#    print(control1.handleOperation("R", 1, 0, -1))
     
     
 
-process1 = Thread(target=procesor0, args=(0,))
-process2 = Thread(target=procesor1, args=(1,))
-process1.start()
+#process1 = Thread(target=procesor0, args=(0,))
+#process2 = Thread(target=procesor1, args=(1,))
+#process1.start()
 #process2.start()
 
-instrData = instrHolder.InstructionsHolder()
-instrData.setInstruction0("WRITE 000;AAAA")
-instrData.setInstruction0Read(False)
+#instrData = instrHolder.InstructionsHolder()
+#instrData.setInstruction0("WRITE 000;AAAA")
+#instrData.setInstruction0Read(False)

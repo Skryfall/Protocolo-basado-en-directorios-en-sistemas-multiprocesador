@@ -1,5 +1,5 @@
-#import entities.l2block as l2bl
-import l2block as l2bl
+import entities.l2block as l2bl
+#import l2block as l2bl
 
 class L22WaySet:
     def __init__(self, number0, number1, l2set):

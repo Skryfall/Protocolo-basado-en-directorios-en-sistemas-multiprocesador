@@ -1,5 +1,5 @@
-#import entities.block as bl
-import block as bl
+import entities.block as bl
+#import block as bl
 
 class L2Block(bl.Block):
     def __init__(self, number, data, coherence, owner, sharers, address):
