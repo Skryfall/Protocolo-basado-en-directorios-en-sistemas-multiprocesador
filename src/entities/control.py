@@ -1,19 +1,17 @@
-import entities.l1cache as l1c
-import entities.l2cache as l2c
-import entities.memory as mem
-import entities.l1cachedataholder as l1cHolder
-#import l1cache as l1c
-#import l2cache as l2c
-#import memory as mem
-#import l1cachedataholder as l1cHolder
+from entities import l1cache as l1c
+from entities import l2cache as l2c
+from entities import memory as mem
+from entities import l1cachedataholder as l1cHolder
 
 import random
 import time
 
 class Control:
-    def __init__(self):
+    def __init__(self, l1cdata, l2cache, memory):
         self.l1cache = l1c.L1Cache()
-        self.l1cdata = l1cHolder.L1CacheDataHolder()
+        self.l1cdata = l1cdata
+        self.l2cache = l2cache
+        self.memory = memory
 
         self.l1getCoherence0Dictionary = {
                                         0: self.l1cdata.getCoherence00,
@@ -150,7 +148,7 @@ class Control:
             return self.handleMissRead(procNumber, address, l1block, l1set)
 
     def handleMissRead(self, procNumber, address, l1block, l1set):
-        l2cache = l2c.L2Cache()
+        l2cache = self.l2cache
         l2set = l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
@@ -209,7 +207,7 @@ class Control:
             return self.handleMissWrite(procNumber, address, data, l1block, l1set)
 
     def handleMissWrite(self, procNumber, address, data, l1block, l1set):
-        l2cache = l2c.L2Cache()
+        l2cache = self.l2cache
         l2set = l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
@@ -223,7 +221,7 @@ class Control:
                 self.setL1Block(l1block, "M", address, data)
                 self.updateHolderCache(procNumber, l1set)
 
-                return self.handleCacheInvalidations(procNumber, number, address, data, l2block, l1set)
+                return self.handleCacheInvalidations(procNumber, address, data, l2block, l1set)
             else:
                 i += 1
 
@@ -250,12 +248,12 @@ class Control:
         return
 
     def getDataFromMemory(self, address):
-        memory = mem.Memory()
+        memory = self.memory
         memblock = memory.getBlockByNumber(address)
         return memblock.getData()
 
     def setDataToMemory(self, address, data):
-        memory = mem.Memory()
+        memory = self.memory
         memblock = memory.getBlockByNumber(address)
         memblock.setData(data)
         return

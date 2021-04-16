@@ -1,80 +1,68 @@
-from threading import Lock, Thread
+from ctypes import c_char_p
 
-class InstructionsHolderSingleton(type):
-    _instances = {}
-
-    _lock: Lock = Lock()
-
-    def __call__(cls, *args, **kwargs):
-        with cls._lock:
-            if cls not in cls._instances:
-                instance = super().__call__(*args, **kwargs)
-                cls._instances[cls] = instance
-        return cls._instances[cls]
-
-class InstructionsHolder(metaclass=InstructionsHolderSingleton):
-    def __init__(self):
-        self.instruction0 = ""
-        self.instruction0Read = True
-        self.instruction1 = ""
-        self.instruction1Read = True
-        self.instruction2 = ""
-        self.instruction2Read = True
-        self.instruction3 = ""
-        self.instruction3Read = True
+class InstructionsHolder():
+    def __init__(self, manager):
+        self.instruction0 = manager.Value(c_char_p, "")
+        self.instruction0Read = manager.Value("i", 1)
+        self.instruction1 = manager.Value(c_char_p, "")
+        self.instruction1Read = manager.Value("i", 1)
+        self.instruction2 = manager.Value(c_char_p, "")
+        self.instruction2Read = manager.Value("i", 1)
+        self.instruction3 = manager.Value(c_char_p, "")
+        self.instruction3Read = manager.Value("i", 1)
 
     def getInstruction0(self):
-        return self.instruction0
+        return self.instruction0.value
 
     def setInstruction0(self, instruction):
-        self.instruction0 = instruction
+        self.instruction0.value = instruction
         return
 
     def getInstruction0Read(self):
-        return self.instruction0Read
+        return self.instruction0Read.value
 
     def setInstruction0Read(self, state):
-        self.instruction0Read = state
+        self.instruction0Read.value = state
         return
 
     def getInstruction1(self):
-        return self.instruction1
+        return self.instruction1.value
 
     def setInstruction1(self, instruction):
-        self.instruction1 = instruction
+        self.instruction1.value = instruction
         return
 
     def getInstruction1Read(self):
-        return self.instruction1Read
+        return self.instruction1Read.value
 
     def setInstruction1Read(self, state):
-        self.instruction1Read = state
+        self.instruction1Read.value = state
         return
         
     def getInstruction2(self):
-        return self.instruction2
+        return self.instruction2.value
 
     def setInstruction2(self, instruction):
-        self.instruction2 = instruction
+        self.instruction2.value = instruction
         return
 
     def getInstruction2Read(self):
-        return self.instruction2Read
+        return self.instruction2Read.value
 
     def setInstruction2Read(self, state):
-        self.instruction2Read = state
+        self.instruction2Read.value = state
         return
 
     def getInstruction3(self):
-        return self.instruction3
+        return self.instruction3.value
 
     def setInstruction3(self, instruction):
-        self.instruction3 = instruction
+        self.instruction3.value = instruction
         return
 
     def getInstruction3Read(self):
-        return self.instruction3Read
+        return self.instruction3Read.value
 
     def setInstruction3Read(self, state):
-        self.instruction3Read = state
+        self.instruction3Read.value = state
         return

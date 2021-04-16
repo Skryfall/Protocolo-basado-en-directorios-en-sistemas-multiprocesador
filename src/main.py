@@ -1,13 +1,11 @@
 import PySimpleGUI as sg
-from threading import Thread
-import concurrent.futures
-import queue
+from multiprocessing import Process, Manager, Value
 
-import entities.l1cachedataholder as l1c
-import entities.instructionsholder as ih
-import entities.l2cache as l2c
-import entities.memory as mem
-import entities.procesor as proc
+from entities import l1cachedataholder as l1c
+from entities import instructionsholder as ih
+from entities import l2cache as l2c
+from entities import memory as mem
+from entities import procesor as proc
 
 sg.theme("Reds")
 
@@ -140,7 +138,7 @@ layout = [ [sg.Column(layout=proc0Column, element_justification="center", key="p
            [sg.Text(text="Set 0", size=(70, 1), justification="center", font=("Any", 10)), sg.Text(text="Set 1", size=(50, 1), justification="center", font=("Any", 10))],
            [sg.Column(layout=bloq0L2Column, element_justification="center"), sg.Column(layout=bloq1L2Column, element_justification="center"), sg.Column(layout=bloq2L2Column, element_justification="center"), sg.Column(layout=bloq3L2Column, element_justification="center")],
            [sg.Text(text="Contenido de la Memoria", size=(105, 1), justification="center", font=("Any", 10)), sg.Text(text="Última Instrucción Generada:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="center", font=("Any", 10), key="ultimaInstruccion")],
-           [sg.Column(layout=bloq0MemColumn, element_justification="center"), sg.Column(layout=bloq1MemColumn, element_justification="center"), sg.Column(layout=bloq2MemColumn, element_justification="center"), sg.Column(layout=bloq3MemColumn, element_justification="center"), sg.Column(layout=bloq4MemColumn, element_justification="center"), sg.Column(layout=bloq5MemColumn, element_justification="center"), sg.Column(layout=bloq6MemColumn, element_justification="center"), sg.Column(layout=bloq7MemColumn, element_justification="center"), sg.Text(text="Siguiente Instrucción:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="center", font=("Any", 10), key="siguienteInstruccion")],
+           [sg.Column(layout=bloq0MemColumn, element_justification="center"), sg.Column(layout=bloq1MemColumn, element_justification="center"), sg.Column(layout=bloq2MemColumn, element_justification="center"), sg.Column(layout=bloq3MemColumn, element_justification="center"), sg.Column(layout=bloq4MemColumn, element_justification="center"), sg.Column(layout=bloq5MemColumn, element_justification="center"), sg.Column(layout=bloq6MemColumn, element_justification="center"), sg.Column(layout=bloq7MemColumn, element_justification="center"), sg.Text(text="Siguiente Instrucción:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="left", font=("Any", 10), key="siguienteInstruccion")],
            [sg.Button(button_text="Ejecución Continua", font=("Any", 10), disabled=False, key="reanudar"), sg.Button(button_text="Pausa", font=("Any", 10), disabled=True, key="pausa"), sg.Button(button_text="Paso", font=("Any", 10), disabled=False, key="paso"), sg.InputText(disabled=False, key="nuevaInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptar")] ]
 
 window = sg.Window(title="Protocolo Basado en Directorios en Sistemas Multiprocesador", layout=layout)
@@ -157,10 +155,7 @@ def decimalToBinary(decimalNumber):
 def decimalToHexadecimal(hexadecimalNumber):
     return hex(hexadecimalNumber).replace("0x", "")
 
-def updateL1Data():
-    l1cachedata = l1c.L1CacheDataHolder()
-    procinstrdata = ih.InstructionsHolder()
-
+def updateL1Data(l1cachedata, procinstrdata):
     window["instruccion0"].update(procinstrdata.getInstruction0())
     window["l1coherencia00"].update(l1cachedata.getCoherence00())
     window["l1direccion00"].update(decimalToBinary(l1cachedata.getAddress00()))
@@ -195,8 +190,7 @@ def updateL1Data():
 
     return
 
-def updateL2Data():
-    l2cache = l2c.L2Cache()
+def updateL2Data(l2cache):
     l2set0 = l2cache.getSet0()
     l2set1 = l2cache.getSet1()
     l2block0 = l2set0.getBlock0()
@@ -230,8 +224,7 @@ def updateL2Data():
 
     return
 
-def updateMemoryData():
-    memory = mem.Memory()
+def updateMemoryData(memory):
     memblock0 = memory.getBlock0()
     memblock1 = memory.getBlock1()
     memblock2 = memory.getBlock2()
@@ -252,29 +245,50 @@ def updateMemoryData():
 
     return  
 
-def createProcessorsAux(number):
-    procesor = proc.Procesor(number)
+def createProcessorsAux(number, memory, l2cache, instructionsHolder, l1cachedataholder):
+    procesor = proc.Procesor(number, memory, l2cache, instructionsHolder, l1cachedataholder)
     procesor.readOperation()
 
-def createProcessors():
-    process0 = Thread(target=createProcessorsAux, args=(0,), daemon=True)
-    process1 = Thread(target=createProcessorsAux, args=(1,), daemon=True)
-    process2 = Thread(target=createProcessorsAux, args=(2,), daemon=True)
-    process3 = Thread(target=createProcessorsAux, args=(3,), daemon=True)
-    
-    process0.start()
-    #process1.start()
-    #process2.start()
-    #process3.start()
+def createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder):
+    Process(target=createProcessorsAux, args=(0, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
+    Process(target=createProcessorsAux, args=(1, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
+    Process(target=createProcessorsAux, args=(2, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
+    Process(target=createProcessorsAux, args=(3, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
+
     return
 
-#def analyzeInstruction(instruction):
+def analyzeInstruction(instruction, procinstrdata):
+    procesor = instruction[:2]
 
+    if (procesor == "p0"):
+        procinstrdata.setInstruction0(instruction[4:0])
+        procinstrdata.setInstruction0Read(False)
+        return
+    elif (procesor == "p1"):
+        procinstrdata.setInstruction1(instruction[4:0])
+        procinstrdata.setInstruction1Read(False)
+        return
+    elif (procesor == "p2"):
+        procinstrdata.setInstruction2(instruction[4:0])
+        procinstrdata.setInstruction2Read(False)
+        return
+    elif (procesor == "p3"):
+        procinstrdata.setInstruction3(instruction[4:0])
+        procinstrdata.setInstruction3Read(False)
+        return
+    else:
+        print("Instrucción no Valida")
+        return
 
 def main():
-    #gui_queue = queue.Queue()
+    manager = Manager()
+    memory = mem.Memory(manager)
+    l2cache = l2c.L2Cache(manager)
+    instructionsHolder = ih.InstructionsHolder(manager)
+    l1cachedataholder = l1c.L1CacheDataHolder(manager)
 
-    createProcessors()
+    createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder)
+    instruction = ""
 
     while True:
         event, values = window.read(timeout=100)
@@ -293,13 +307,18 @@ def main():
             window["nuevaInstruccion"].update(disabled=True)
             window["aceptar"].update(disabled=True)
         if event == "aceptar":
-            window["siguienteInstruccion"].update(values["nuevaInstruccion"])
+            instruction = values["nuevaInstruccion"].lower()
+            window["siguienteInstruccion"].update(instruction)
+        if event == "paso":
+            analyzeInstruction(instruction, instructionsHolder)
+            instruction = ""
+            window["siguienteInstruccion"].update(instruction)
 
-        updateL1Data()
-        updateL2Data()        
-        updateMemoryData()
+        updateL1Data(l1cachedataholder, instructionsHolder)
+        updateL2Data(l2cache)        
+        updateMemoryData(memory)
 
     window.close()
 
-if __name__ == "__main__":
+if __name__ == "__main__":      
     main()

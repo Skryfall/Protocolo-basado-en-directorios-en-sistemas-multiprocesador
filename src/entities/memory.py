@@ -1,30 +1,16 @@
-import entities.block as bl
-#import block as bl
+from entities import block as bl
+from multiprocessing import Manager
 
-from threading import Lock, Thread
-
-class MemorySingleton(type):
-    _instances = {}
-
-    _lock: Lock = Lock()
-
-    def __call__(cls, *args, **kwargs):
-        with cls._lock:
-            if cls not in cls._instances:
-                instance = super().__call__(*args, **kwargs)
-                cls._instances[cls] = instance
-        return cls._instances[cls]
-
-class Memory(metaclass=MemorySingleton):
-    def __init__(self):
-        self.block0 = bl.Block(0, 0)
-        self.block1 = bl.Block(1, 0)
-        self.block2 = bl.Block(2, 0)
-        self.block3 = bl.Block(3, 0)
-        self.block4 = bl.Block(4, 0)
-        self.block5 = bl.Block(5, 0)
-        self.block6 = bl.Block(6, 0)
-        self.block7 = bl.Block(7, 0)
+class Memory():
+    def __init__(self, manager):
+        self.block0 = bl.Block(manager.Value("i", 0), manager.Value("i", 0))
+        self.block1 = bl.Block(manager.Value("i", 1), manager.Value("i", 0))
+        self.block2 = bl.Block(manager.Value("i", 2), manager.Value("i", 0))
+        self.block3 = bl.Block(manager.Value("i", 3), manager.Value("i", 0))
+        self.block4 = bl.Block(manager.Value("i", 4), manager.Value("i", 0))
+        self.block5 = bl.Block(manager.Value("i", 5), manager.Value("i", 0))
+        self.block6 = bl.Block(manager.Value("i", 6), manager.Value("i", 0))
+        self.block7 = bl.Block(manager.Value("i", 7), manager.Value("i", 0))
         self.blocksDictionary = {
                                     0: self.block0,
                                     1: self.block1,

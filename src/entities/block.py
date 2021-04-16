@@ -4,13 +4,13 @@ class Block:
         self.data = data
 
     def getNumber(self):
-        return self.number
+        return self.number.value
 
     def setNumber(self, number):
-        self.number = number
+        self.number.value = number
 
     def getData(self):
-        return self.data
+        return self.data.value
 
     def setData(self, data):
-        self.data = data
+        self.data.value = data

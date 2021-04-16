@@ -1,16 +1,16 @@
-import entities.control as ctrl
-import entities.instructionsholder as instrHolder
-#import control as ctrl
-#import instructionsholder as instrHolder
+from entities import control as ctrl
+from entities import instructionsholder as instrHolder
 
 import time
-from threading import Thread
+from multiprocessing import Process
 
 class Procesor:
-    def __init__(self, number):
+    def __init__(self, number, memory, l2cache, instructionsHolder, l1cachedataholder):
         self.number = number
-        self.control = ctrl.Control()
-        self.instrData = instrHolder.InstructionsHolder()
+        self.control = ctrl.Control(l1cachedataholder, l2cache, memory)
+        self.instrData = instructionsHolder
+        self.memory = memory
+        self.l2cache = l2cache
 
         self.getInstructionDictionary = {
                                                 0: self.instrData.getInstruction0,
@@ -80,41 +80,18 @@ class Procesor:
             if not (state):
                 instr = self.getInstructionDictionary.get(self.number)()
                 self.setInstructionReadDictionary.get(self.number)(True)
-                if (instr[:5] == "WRITE"):
+                if (instr[:5] == "write"):
                     address = self.binaryToDecimal(instr[6:9])
                     data = self.hexadecimalToDecimal(instr[10:14])
                     time.sleep(2)
                     self.control.handleOperation("W", self.number, address, data)
                     time.sleep(3)
-                elif (instr[:4] == "READ"):
+                elif (instr[:4] == "read"):
                     address = self.binaryToDecimal(instr[5:8])
                     time.sleep(2)
                     self.control.handleOperation("R", self.number, address, -1)
                     time.sleep(3)
-                elif (instr[:4] == "CALC"):
+                elif (instr[:4] == "calc"):
                     time.sleep(5)
                 else:
-                    print("Instrucción no Válida")
-
-#def procesor0(number):
-#    procesor0 = Procesor(number)
-#    procesor0.readOperation()
-
-#def procesor1(number):
-#    procesor1 = Procesor(number)
-#    instrData = instrHolder.InstructionsHolder()
-#    time.sleep(5)
-#    control1.handleOperation("R", 1, 0, -1)
-#    time.sleep(3)
-#    print(control1.handleOperation("R", 1, 0, -1))
-    
-    
-
-#process1 = Thread(target=procesor0, args=(0,))
-#process2 = Thread(target=procesor1, args=(1,))
-#process1.start()
-#process2.start()
-
-#instrData = instrHolder.InstructionsHolder()
-#instrData.setInstruction0("WRITE 000;AAAA")
-#instrData.setInstruction0Read(False)
+                    print("Instrucción no Valida")

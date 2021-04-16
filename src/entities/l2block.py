@@ -1,5 +1,4 @@
-import entities.block as bl
-#import block as bl
+from entities import block as bl
 
 class L2Block(bl.Block):
     def __init__(self, number, data, coherence, owner, sharers, address):
@@ -10,29 +9,33 @@ class L2Block(bl.Block):
         self.address = address
 
     def getCoherence(self):
-        return self.coherence
+        return self.coherence.value
 
     def setCoherence(self, coherence):
-        self.coherence = coherence
+        self.coherence.value = coherence
         return
 
     def getOwner(self):
-        return self.owner
+        return self.owner.value
 
     def setOwner(self, owner):
-        self.owner = owner
+        self.owner.value = owner
         return
 
     def getSharers(self):
         return self.sharers
 
-    def setSharers(self, sharers):
-        self.sharers = sharers
+    def clearSharers(self):
+        self.sharers[:] = []
+        return
+
+    def appendSharers(self, number):
+        self.sharers.append(number)
         return
 
     def getAddress(self):
-        return self.address
+        return self.address.value
 
     def setAddress(self, address):
-        self.address = address
+        self.address.value = address
         return
