@@ -1,11 +1,24 @@
-from entities import block as bl
-
-class L1Block(bl.Block):
+class L1Block():
     def __init__(self, number, data, l1set, coherence, address):
-        bl.Block.__init__(self, number, data)
+        self.number = number
+        self.data = data
         self.set = l1set
         self.coherence = coherence
         self.address = address
+
+    def getNumber(self):
+        return self.number
+
+    def setNumber(self, number):
+        self.number = number
+        return
+
+    def getData(self):
+        return self.data
+
+    def setData(self, data):
+        self.data = data
+        return
 
     def getSet(self):
         return self.set

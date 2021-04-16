@@ -14,77 +14,89 @@ class Control:
         self.memory = memory
 
         self.l1getCoherence0Dictionary = {
-                                        0: self.l1cdata.getCoherence00,
-                                        1: self.l1cdata.getCoherence10,
-                                        2: self.l1cdata.getCoherence20,
-                                        3: self.l1cdata.getCoherence30
-                                      }
+            0: self.l1cdata.getCoherence00,
+            1: self.l1cdata.getCoherence10,
+            2: self.l1cdata.getCoherence20,
+            3: self.l1cdata.getCoherence30
+        }
+                                        
         self.l1getCoherence1Dictionary = {
-                                        0: self.l1cdata.getCoherence01,
-                                        1: self.l1cdata.getCoherence11,
-                                        2: self.l1cdata.getCoherence21,
-                                        3: self.l1cdata.getCoherence31
-                                      }
+            0: self.l1cdata.getCoherence01,
+            1: self.l1cdata.getCoherence11,
+            2: self.l1cdata.getCoherence21,
+            3: self.l1cdata.getCoherence31
+        }
+                                    
         self.l1setCoherence0Dictionary = {
-                                        0: self.l1cdata.setCoherence00,
-                                        1: self.l1cdata.setCoherence10,
-                                        2: self.l1cdata.setCoherence20,
-                                        3: self.l1cdata.setCoherence30
-                                      }
+            0: self.l1cdata.setCoherence00,
+            1: self.l1cdata.setCoherence10,
+            2: self.l1cdata.setCoherence20,
+            3: self.l1cdata.setCoherence30
+        }
+                                        
         self.l1setCoherence1Dictionary = {
-                                        0: self.l1cdata.setCoherence01,
-                                        1: self.l1cdata.setCoherence11,
-                                        2: self.l1cdata.setCoherence21,
-                                        3: self.l1cdata.setCoherence31
-                                      }
+            0: self.l1cdata.setCoherence01,
+            1: self.l1cdata.setCoherence11,
+            2: self.l1cdata.setCoherence21,
+            3: self.l1cdata.setCoherence31
+        }
+                                    
         self.l1getAddress0Dictionary = {
-                                        0: self.l1cdata.getAddress00,
-                                        1: self.l1cdata.getAddress10,
-                                        2: self.l1cdata.getAddress20,
-                                        3: self.l1cdata.getAddress30
-                                    }
+            0: self.l1cdata.getAddress00,
+            1: self.l1cdata.getAddress10,
+            2: self.l1cdata.getAddress20,
+            3: self.l1cdata.getAddress30
+        }
+                                    
         self.l1getAddress1Dictionary = {
-                                        0: self.l1cdata.getAddress01,
-                                        1: self.l1cdata.getAddress11,
-                                        2: self.l1cdata.getAddress21,
-                                        3: self.l1cdata.getAddress31
-                                    }
+            0: self.l1cdata.getAddress01,
+            1: self.l1cdata.getAddress11,
+            2: self.l1cdata.getAddress21,
+            3: self.l1cdata.getAddress31
+        }
+                                        
         self.l1setAddress0Dictionary = {
-                                        0: self.l1cdata.setAddress00,
-                                        1: self.l1cdata.setAddress10,
-                                        2: self.l1cdata.setAddress20,
-                                        3: self.l1cdata.setAddress30
-                                    }
+            0: self.l1cdata.setAddress00,
+            1: self.l1cdata.setAddress10,
+            2: self.l1cdata.setAddress20,
+            3: self.l1cdata.setAddress30
+        }
+                                        
         self.l1setAddress1Dictionary = {
-                                        0: self.l1cdata.setAddress01,
-                                        1: self.l1cdata.setAddress11,
-                                        2: self.l1cdata.setAddress21,
-                                        3: self.l1cdata.setAddress31
-                                    }
+            0: self.l1cdata.setAddress01,
+            1: self.l1cdata.setAddress11,
+            2: self.l1cdata.setAddress21,
+            3: self.l1cdata.setAddress31
+        }
+                                        
         self.l1getData0Dictionary = {
-                                    0: self.l1cdata.getData00,
-                                    1: self.l1cdata.getData10,
-                                    2: self.l1cdata.getData20,
-                                    3: self.l1cdata.getData30
-                                 }
+            0: self.l1cdata.getData00,
+            1: self.l1cdata.getData10,
+            2: self.l1cdata.getData20,
+            3: self.l1cdata.getData30
+        }
+                                    
         self.l1getData1Dictionary = {
-                                    0: self.l1cdata.getData01,
-                                    1: self.l1cdata.getData11,
-                                    2: self.l1cdata.getData21,
-                                    3: self.l1cdata.getData31
-                                 }
+            0: self.l1cdata.getData01,
+            1: self.l1cdata.getData11,
+            2: self.l1cdata.getData21,
+            3: self.l1cdata.getData31
+        }
+                                    
         self.l1setData0Dictionary = {
-                                    0: self.l1cdata.setData00,
-                                    1: self.l1cdata.setData10,
-                                    2: self.l1cdata.setData20,
-                                    3: self.l1cdata.setData30
-                                 }
+            0: self.l1cdata.setData00,
+            1: self.l1cdata.setData10,
+            2: self.l1cdata.setData20,
+            3: self.l1cdata.setData30
+        }
+                                    
         self.l1setData1Dictionary = {
-                                    0: self.l1cdata.setData01,
-                                    1: self.l1cdata.setData11,
-                                    2: self.l1cdata.setData21,
-                                    3: self.l1cdata.setData31
-                                 }
+            0: self.l1cdata.setData01,
+            1: self.l1cdata.setData11,
+            2: self.l1cdata.setData21,
+            3: self.l1cdata.setData31
+        }
+                                    
 
     def handleOperation(self, operation, procNumber, address, data):
         self.updateLocalCache(procNumber)
@@ -148,8 +160,7 @@ class Control:
             return self.handleMissRead(procNumber, address, l1block, l1set)
 
     def handleMissRead(self, procNumber, address, l1block, l1set):
-        l2cache = self.l2cache
-        l2set = l2cache.getL2SetByNumber(l1set)
+        l2set = self.l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
         j = -1
@@ -159,11 +170,19 @@ class Control:
                 j = i
                 i += 1
             elif (l2block.getAddress() == address):
+                if (l1block.getCoherence() == "M"):
+                    l2blocks.remove(l2block)
+                    oldL2block = l2blocks[0]
+                    if (oldL2block.getCoherence() == "DM" and oldL2block.getOwner() == procNumber):
+                        self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                        self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
+
                 self.setL1Block(l1block, "S", address, l2block.getData())
                 self.updateHolderCache(procNumber, l1set)
 
                 sharers = []
                 if (l2block.getCoherence() == "DM"):
+                    self.setDataToMemory(l2block.getAddress(), l2block.getData())
                     self.updateHolderCache(l2block.getOwner(), l1set)
                     sharers.append(l2block.getOwner())
                     sharers.append(procNumber)
@@ -185,8 +204,19 @@ class Control:
             j = random.randint(0, 1)
 
         l2block = l2blocks[j]
-        if (l2block.getCoherence() != "DI"):
+        if (l2block.getCoherence() == "DM"):
             self.setDataToMemory(l2block.getAddress(), l2block.getData())
+            self.handleCacheInvalidations([l2block.getOwner()], l1set)
+
+        if (l2block.getCoherence() == "DS"):
+            self.handleCacheInvalidations([l2block.getSharers()], l1set)
+
+        if (l1block.getCoherence() == "S"):
+            l2blocks.remove(l2block)
+            oldL2block = l2blocks[0]
+            oldSharers = oldL2block.getSharers()
+            if procNumber in oldSharers:
+                oldSharers.remove(procNumber)
 
         data = self.getDataFromMemory(address)
 
@@ -201,14 +231,26 @@ class Control:
         if (coherence == "I" or coherence == "S"):
             return self.handleMissWrite(procNumber, address, data, l1block, l1set)
         elif (address == l1block.getAddress()):
-            l1block.setData(data)
-            return
+            return self.handleWriteHit(procNumber, address, data, l1block, l1set)
         else:
             return self.handleMissWrite(procNumber, address, data, l1block, l1set)
 
+    def handleWriteHit(self, procNumber, address, data, l1block, l1set):
+        l2set = self.l2cache.getL2SetByNumber(l1set)
+        l2blocks = l2set.getAllBlocks()
+        i = 0
+        while (i != len(l2blocks)):
+            l2block = l2blocks[i]
+            if (l2block.getOwner() == procNumber):
+                self.setDataToMemory(l2block.getAddress(), l2block.getData())
+                self.setL2Block(l2block, "DM", procNumber, [], address, data)
+                l1block.setData(data)
+                self.updateHolderCache(procNumber, l1set)
+                return
+            i += 1
+
     def handleMissWrite(self, procNumber, address, data, l1block, l1set):
-        l2cache = self.l2cache
-        l2set = l2cache.getL2SetByNumber(l1set)
+        l2set = self.l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
         j = -1
@@ -218,10 +260,31 @@ class Control:
                 j = i
                 i += 1
             elif (l2block.getAddress() == address):
+                if (l2block.getOwner() != -1):
+                    self.setDataToMemory(l2block.getAddress(), l2block.getData())
+                    self.invalidateHolderCache(l2block.getOwner(), l1set)
+                
+                l2blocks.remove(l2block)
+                oldL2block = l2blocks[0]
+                if (oldL2block.getCoherence() == "DM" and oldL2block.getOwner() == procNumber):
+                    self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                    self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
+
+                sharers = l2block.getSharers()
+                if procNumber in sharers:
+                    sharers.remove(procNumber)
+
+                self.handleCacheInvalidations(sharers, l1set)
+                self.setL2Block(l2block, "DM", procNumber, [], address, data)
                 self.setL1Block(l1block, "M", address, data)
                 self.updateHolderCache(procNumber, l1set)
-
-                return self.handleCacheInvalidations(procNumber, address, data, l2block, l1set)
+                return 
+            elif (l2block.getOwner() == procNumber):
+                self.setDataToMemory(l2block.getAddress(), l2block.getData())
+                self.setL2Block(l2block, "DM", procNumber, [], address, data)
+                self.setL1Block(l1block, "M", address, data)
+                self.updateHolderCache(procNumber, l1set)
+                return
             else:
                 i += 1
 
@@ -229,8 +292,14 @@ class Control:
             j = random.randint(0, 1)
 
         l2block = l2blocks[j]
-        if (l2block.getCoherence() != "DI"):
+        l2blockCoherence = l2block.getCoherence()
+
+        if (l2blockCoherence == "DM"):
             self.setDataToMemory(l2block.getAddress(), l2block.getData())
+            self.invalidateHolderCache(l2block.getOwner(), l1set)   
+             
+        if (l2blockCoherence == "DS"):
+            self.handleCacheInvalidations(l2block.getSharers(), l1set)
 
         self.setL2Block(l2block, "DM", procNumber, [], address, data)
         self.setL1Block(l1block, "M", address, data)
@@ -238,32 +307,30 @@ class Control:
         
         return
 
-    def handleCacheInvalidations(self, procNumber, address, data, l2block, l1set):
-        sharers = l2block.getSharers()
-        self.setL2Block(l2block, "DM", procNumber, [], address, data)
-
+    def handleCacheInvalidations(self, sharers, l1set):
         for procesor in sharers:
             self.invalidateHolderCache(procesor, l1set)
         
         return
 
     def getDataFromMemory(self, address):
-        memory = self.memory
-        memblock = memory.getBlockByNumber(address)
+        memblock = self.memory.getBlockByNumber(address)
         return memblock.getData()
 
     def setDataToMemory(self, address, data):
-        memory = self.memory
-        memblock = memory.getBlockByNumber(address)
+        memblock = self.memory.getBlockByNumber(address)
         memblock.setData(data)
         return
 
     def setL2Block(self, l2block, coherence, owner, sharers, address, data):
         l2block.setCoherence(coherence)
         l2block.setOwner(owner)
-        l2block.setSharers(sharers)
         l2block.setAddress(address)
         l2block.setData(data)
+        l2block.clearSharers()
+        if sharers:
+            for procesor in sharers:
+                l2block.appendSharers(procesor)
         return
 
     def setL1Block(self, l1block, coherence, address, data):

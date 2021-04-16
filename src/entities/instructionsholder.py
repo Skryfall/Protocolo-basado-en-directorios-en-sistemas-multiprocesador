@@ -2,6 +2,7 @@ from ctypes import c_char_p
 
 class InstructionsHolder():
     def __init__(self, manager):
+        self.instructionTime = manager.Value("i", 6)
         self.instruction0 = manager.Value(c_char_p, "")
         self.instruction0Read = manager.Value("i", 1)
         self.instruction1 = manager.Value(c_char_p, "")
@@ -10,6 +11,13 @@ class InstructionsHolder():
         self.instruction2Read = manager.Value("i", 1)
         self.instruction3 = manager.Value(c_char_p, "")
         self.instruction3Read = manager.Value("i", 1)
+
+    def getInstructionTime(self):
+        return self.instructionTime.value
+
+    def setInstructionTime(self, time):
+        self.instructionTime.value = time
+        return
 
     def getInstruction0(self):
         return self.instruction0.value
