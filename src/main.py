@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 from multiprocessing import Process, Manager, Value
 import math
 import random
+import numpy as np
 
 from entities import l1cachedataholder as l1c
 from entities import instructionsholder as ih
@@ -9,11 +10,7 @@ from entities import l2cache as l2c
 from entities import memory as mem
 from entities import procesor as proc
 
-firstInstruction = True
-p0InstrAmount = 0
-p1InstrAmount = 0
-p2InstrAmount = 0
-p3InstrAmount = 0
+generator = np.random.default_rng()
 
 sg.theme("Reds")
 
@@ -146,9 +143,9 @@ layout = [ [sg.Column(layout=proc0Column, element_justification="center", key="p
            [sg.Text(text="Set 0", size=(70, 1), justification="center", font=("Any", 10)), sg.Text(text="Set 1", size=(50, 1), justification="center", font=("Any", 10))],
            [sg.Column(layout=bloq0L2Column, element_justification="center"), sg.Column(layout=bloq1L2Column, element_justification="center"), sg.Column(layout=bloq2L2Column, element_justification="center"), sg.Column(layout=bloq3L2Column, element_justification="center")],
            [sg.Text(text="Contenido de la Memoria", size=(105, 1), justification="center", font=("Any", 10)), sg.Text(text="Última Instrucción Generada:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="center", font=("Any", 10), key="ultimaInstruccion")],
-           [sg.Column(layout=bloq0MemColumn, element_justification="center"), sg.Column(layout=bloq1MemColumn, element_justification="center"), sg.Column(layout=bloq2MemColumn, element_justification="center"), sg.Column(layout=bloq3MemColumn, element_justification="center"), sg.Column(layout=bloq4MemColumn, element_justification="center"), sg.Column(layout=bloq5MemColumn, element_justification="center"), sg.Column(layout=bloq6MemColumn, element_justification="center"), sg.Column(layout=bloq7MemColumn, element_justification="center"), sg.Text(text="Siguiente Instrucción:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="left", font=("Any", 10), key="siguienteInstruccion")],
+           [sg.Column(layout=bloq0MemColumn, element_justification="center"), sg.Column(layout=bloq1MemColumn, element_justification="center"), sg.Column(layout=bloq2MemColumn, element_justification="center"), sg.Column(layout=bloq3MemColumn, element_justification="center"), sg.Column(layout=bloq4MemColumn, element_justification="center"), sg.Column(layout=bloq5MemColumn, element_justification="center"), sg.Column(layout=bloq6MemColumn, element_justification="center"), sg.Column(layout=bloq7MemColumn, element_justification="center"), sg.Text(text="Siguiente Instrucción Manual:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="left", font=("Any", 10), key="siguienteInstruccion")],
            [sg.Button(button_text="Ejecución Continua", font=("Any", 10), disabled=False, key="reanudar"), sg.Button(button_text="Pausa", font=("Any", 10), disabled=True, key="pausa"), sg.Button(button_text="Paso", font=("Any", 10), disabled=False, key="paso"), sg.InputText(disabled=False, key="nuevaInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptar")],
-           [sg.Text(text="Introducir Tiempo de Ejecución por Instrucción en Segundos: ", justification="center", font=("Any", 10)), sg.InputText(disabled=False, key="tiempoInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptartiempo"), sg.Text(text="Tiempo Actual: ", justification="center", font=("Any", 10)), sg.Text(text="XX", justification="left", font=("Any", 10), key="tiempoactual"), sg.Text(text=" segundos", justification="center", font=("Any", 10))] ]
+           [sg.Text(text="Introducir Tiempo de Ejecución por Instrucción en Segundos: ", justification="center", font=("Any", 10)), sg.InputText(disabled=False, key="tiempoInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptartiempo"), sg.Text(text="Tiempo Actual: ", justification="center", font=("Any", 10)), sg.Text(text="XX", justification="left", font=("Any", 10), key="tiempoactual"), sg.Text(text=" segundos", justification="center", font=("Any", 10)), sg.Button(button_text="DEBUG", font=("Any", 10), disabled=False, key="debug")] ]
 
 window = sg.Window(title="Protocolo Basado en Directorios en Sistemas Multiprocesador", layout=layout)
 
@@ -159,10 +156,22 @@ def listToString(sharers):
         return ",".join([str(proc) for proc in sharers])
 
 def decimalToBinary(decimalNumber):
-    return bin(decimalNumber).replace("0b", "")
+    result = bin(decimalNumber).replace("0b", "")
+    resultLen = len(result)
+    while (resultLen != 3):
+        result = "0" + result
+        resultLen += 1
+
+    return result
 
 def decimalToHexadecimal(hexadecimalNumber):
-    return hex(hexadecimalNumber).replace("0x", "")
+    result = hex(hexadecimalNumber).replace("0x", "")
+    resultLen = len(result)
+    while (resultLen != 4):
+        result = "0" + result
+        resultLen += 1
+
+    return result
 
 def updateL1Data(l1cachedata, procinstrdata):
     window["tiempoactual"].update(procinstrdata.getInstructionTime())
@@ -291,43 +300,32 @@ def analyzeInstruction(instruction, procinstrdata):
         print("Instrucción no Valida, el nombre del Procesador es incorrecto")
         return
 
-def calculatePoissonDistribution(mu, x):
-    return (math.exp(-1 * mu) * math.pow(mu, x)) / math.factorial(x)
+def generateCalc(processor):
+    return "p" + str(processor) + ": calc"
 
-def updateProcessorInstructionAmount(number):
-    global p0InstrAmount
-    global p1InstrAmount
-    global p2InstrAmount
-    global p3InstrAmount
+def generateRead(processor, address):
+    return "p" + str(processor) + ": read " + decimalToBinary(address)
 
-    if (number == 0):
-        p0InstrAmount += 1
-        return
-    elif (number == 1):
-        p1InstrAmount += 1
-        return
-    elif (number == 2):
-        p2InstrAmount += 1
-        return
-    else:
-        p3InstrAmount += 1
-        return
+def generateWrite(processor, address, data):
+    return "p" + str(processor) + ": write " + decimalToBinary(address) + ";" + decimalToHexadecimal(data)
 
-def generateInstruction(procinstrdata):
-    global firstInstruction
-    
+def generateInstruction(procinstrdata, window):
     if (procinstrdata.getInstruction0Read() == 1 and procinstrdata.getInstruction1Read() == 1 and procinstrdata.getInstruction2Read() == 1 and procinstrdata.getInstruction3Read() == 1):
-        if (firstInstruction):
-            processor = random.randint(0, 3)
-            updateProcessorInstructionAmount(processor)
-            firstInstruction = False
-        else:
-            procNumberProbabilities = []
-            mu = 2.5
-            for i in range(4):
-                procNumberProbabilities.append
-            
-    return
+        processor = round(generator.uniform(0, 3))
+        instructionType = round(generator.uniform(0, 2))
+        if (instructionType == 0):
+            instruction = generateCalc(processor)
+        address = round(generator.uniform(0, 7))
+        if (instructionType == 1):
+            instruction = generateRead(processor, address)
+        if (instructionType == 2):
+            data = round(generator.uniform(0, 65535))
+            instruction = generateWrite(processor, address, data)
+        window["ultimaInstruccion"].update(instruction)
+        #analyzeInstruction(instruction, procinstrdata)
+        return instruction
+
+    return ""
 
 def main():
     manager = Manager()
@@ -388,9 +386,14 @@ def main():
         updateMemoryData(memory)
 
         if not pause:
-            generateInstruction(instructionsHolder)
+            if (instruction == ""):
+                instruction = generateInstruction(instructionsHolder, window)
+            else:
+                if event == "debug":
+                    analyzeInstruction(instruction, instructionsHolder)
+                    instruction = ""
 
     window.close()
 
-if __name__ == "__main__": 
+if __name__ == "__main__":    
     main()

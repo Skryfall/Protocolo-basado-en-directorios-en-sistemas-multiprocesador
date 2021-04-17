@@ -170,12 +170,24 @@ class Control:
                 j = i
                 i += 1
             elif (l2block.getAddress() == address):
-                if (l1block.getCoherence() == "M"):
+                if (l1block.getCoherence() != "I"):
                     l2blocks.remove(l2block)
                     oldL2block = l2blocks[0]
+                    oldSharers = oldL2block.getSharers()
                     if (oldL2block.getCoherence() == "DM" and oldL2block.getOwner() == procNumber):
                         self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
                         self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
+                    elif (oldL2block.getCoherence() == "DS"):
+                        if procNumber in oldSharers:
+                            oldSharers.remove(procNumber)
+                            if not oldSharers:
+                                self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
+                            else:
+                                newSharers = []
+                                for sharer in oldSharers:
+                                    newSharers.append(sharer)
+
+                                self.setL2Block(oldL2block, "DS", oldL2block.getOwner(), newSharers, oldL2block.getAddress(), oldL2block.getData())
 
                 self.setL1Block(l1block, "S", address, l2block.getData())
                 self.updateHolderCache(procNumber, l1set)
@@ -209,7 +221,7 @@ class Control:
             self.handleCacheInvalidations([l2block.getOwner()], l1set)
 
         if (l2block.getCoherence() == "DS"):
-            self.handleCacheInvalidations([l2block.getSharers()], l1set)
+            self.handleCacheInvalidations(l2block.getSharers(), l1set)
 
         if (l1block.getCoherence() == "S"):
             l2blocks.remove(l2block)
@@ -217,6 +229,15 @@ class Control:
             oldSharers = oldL2block.getSharers()
             if procNumber in oldSharers:
                 oldSharers.remove(procNumber)
+                if not oldSharers:
+                    self.setL2Block(oldL2block, "DI", -1, [], oldL2block.getAddress(), oldL2block.getData())
+
+        if (l1block.getCoherence() == "M"):
+            l2blocks.remove(l2block)
+            oldL2block = l2blocks[0]
+            if (oldL2block.getOwner() == procNumber):
+                self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                self.setL2Block(oldL2block, "DI", -1, [], oldL2block.getAddress(), oldL2block.getData())
 
         data = self.getDataFromMemory(address)
 
@@ -266,9 +287,21 @@ class Control:
                 
                 l2blocks.remove(l2block)
                 oldL2block = l2blocks[0]
+                oldSharers = oldL2block.getSharers()
                 if (oldL2block.getCoherence() == "DM" and oldL2block.getOwner() == procNumber):
                     self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
                     self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
+                elif (oldL2block.getCoherence() == "DS"):
+                        if procNumber in oldSharers:
+                            oldSharers.remove(procNumber)
+                            if not oldSharers:
+                                self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
+                            else:
+                                newSharers = []
+                                for sharer in oldSharers:
+                                    newSharers.append(sharer)
+
+                                self.setL2Block(oldL2block, "DS", oldL2block.getOwner(), newSharers, oldL2block.getAddress(), oldL2block.getData())
 
                 sharers = l2block.getSharers()
                 if procNumber in sharers:
@@ -279,14 +312,19 @@ class Control:
                 self.setL1Block(l1block, "M", address, data)
                 self.updateHolderCache(procNumber, l1set)
                 return 
-            elif (l2block.getOwner() == procNumber):
+            else:
+                i += 1
+
+        i = 0
+        while (i != len(l2blocks)):
+            if (l2block.getOwner() == procNumber):
                 self.setDataToMemory(l2block.getAddress(), l2block.getData())
                 self.setL2Block(l2block, "DM", procNumber, [], address, data)
                 self.setL1Block(l1block, "M", address, data)
                 self.updateHolderCache(procNumber, l1set)
                 return
-            else:
-                i += 1
+            i += 1
+
 
         if (j == -1):
             j = random.randint(0, 1)
@@ -297,9 +335,25 @@ class Control:
         if (l2blockCoherence == "DM"):
             self.setDataToMemory(l2block.getAddress(), l2block.getData())
             self.invalidateHolderCache(l2block.getOwner(), l1set)   
-             
+
         if (l2blockCoherence == "DS"):
             self.handleCacheInvalidations(l2block.getSharers(), l1set)
+
+        if (l1block.getCoherence() == "S"):
+            l2blocks.remove(l2block)
+            oldL2block = l2blocks[0]
+            oldSharers = oldL2block.getSharers()
+            if procNumber in oldSharers:
+                oldSharers.remove(procNumber)
+                if not oldSharers:
+                    self.setL2Block(oldL2block, "DI", -1, [], oldL2block.getAddress(), oldL2block.getData())
+
+        if (l1block.getCoherence() == "M"):
+            l2blocks.remove(l2block)
+            oldL2block = l2blocks[0]
+            if (oldL2block.getOwner() == procNumber):
+                self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                self.setL2Block(oldL2block, "DI", -1, [], oldL2block.getAddress(), oldL2block.getData())
 
         self.setL2Block(l2block, "DM", procNumber, [], address, data)
         self.setL1Block(l1block, "M", address, data)

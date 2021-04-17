@@ -97,27 +97,27 @@ class Procesor:
             state = self.getInstructionReadDictionary.get(self.number)()
             if not (state):
                 instr = self.getInstructionDictionary.get(self.number)()
-                time = round(self.instrData.getInstructionTime() / 2)
+                wait = round(self.instrData.getInstructionTime() / 2)
                 if (instr[:5] == "write"):
                     address = self.binaryToDecimal(instr[6:9])
                     data = self.hexadecimalToDecimal(instr[10:14])
                     if (address != -1 and data != -1):
-                        time.sleep(time)
+                        time.sleep(wait)
                         self.control.handleOperation("W", self.number, address, data)
-                        time.sleep(time)
+                        time.sleep(wait)
                         print("P" + str(self.number) + ": Instrucción ejecutada")
                     self.setInstructionReadDictionary.get(self.number)(1)
                 elif (instr[:4] == "read"):
                     address = self.binaryToDecimal(instr[5:8])
                     if (address != -1):    
-                        time.sleep(time)
+                        time.sleep(wait)
                         self.control.handleOperation("R", self.number, address, -1)
-                        time.sleep(time)
+                        time.sleep(wait)
                         print("P" + str(self.number) + ": Instrucción ejecutada")
                     self.setInstructionReadDictionary.get(self.number)(1)
                 elif (instr[:4] == "calc"):
-                    time.sleep(time)
-                    time.sleep(time)
+                    time.sleep(wait)
+                    time.sleep(wait)
                     print("P" + str(self.number) + ": Instrucción ejecutada")
                     self.setInstructionReadDictionary.get(self.number)(1)
                 else:
