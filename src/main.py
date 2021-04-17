@@ -10,6 +10,8 @@ from entities import l2cache as l2c
 from entities import memory as mem
 from entities import procesor as proc
 
+debug = False
+
 generator = np.random.default_rng()
 
 sg.theme("Reds")
@@ -145,7 +147,7 @@ layout = [ [sg.Column(layout=proc0Column, element_justification="center", key="p
            [sg.Text(text="Contenido de la Memoria", size=(105, 1), justification="center", font=("Any", 10)), sg.Text(text="Última Instrucción Generada:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="center", font=("Any", 10), key="ultimaInstruccion")],
            [sg.Column(layout=bloq0MemColumn, element_justification="center"), sg.Column(layout=bloq1MemColumn, element_justification="center"), sg.Column(layout=bloq2MemColumn, element_justification="center"), sg.Column(layout=bloq3MemColumn, element_justification="center"), sg.Column(layout=bloq4MemColumn, element_justification="center"), sg.Column(layout=bloq5MemColumn, element_justification="center"), sg.Column(layout=bloq6MemColumn, element_justification="center"), sg.Column(layout=bloq7MemColumn, element_justification="center"), sg.Text(text="Siguiente Instrucción Manual:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="left", font=("Any", 10), key="siguienteInstruccion")],
            [sg.Button(button_text="Ejecución Continua", font=("Any", 10), disabled=False, key="reanudar"), sg.Button(button_text="Pausa", font=("Any", 10), disabled=True, key="pausa"), sg.Button(button_text="Paso", font=("Any", 10), disabled=False, key="paso"), sg.InputText(disabled=False, key="nuevaInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptar")],
-           [sg.Text(text="Introducir Tiempo de Ejecución por Instrucción en Segundos: ", justification="center", font=("Any", 10)), sg.InputText(disabled=False, key="tiempoInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptartiempo"), sg.Text(text="Tiempo Actual: ", justification="center", font=("Any", 10)), sg.Text(text="XX", justification="left", font=("Any", 10), key="tiempoactual"), sg.Text(text=" segundos", justification="center", font=("Any", 10)), sg.Button(button_text="DEBUG", font=("Any", 10), disabled=False, key="debug")] ]
+           [sg.Text(text="Introducir Tiempo de Ejecución por Instrucción en Segundos: ", justification="center", font=("Any", 10)), sg.InputText(disabled=False, key="tiempoInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptartiempo"), sg.Text(text="Tiempo Actual: ", justification="center", font=("Any", 10)), sg.Text(text="XX", justification="left", font=("Any", 10), key="tiempoactual"), sg.Text(text=" segundos", justification="center", font=("Any", 10)), sg.Button(button_text="DEBUG", font=("Any", 10), disabled=False, key="debug", visible=debug)] ]
 
 window = sg.Window(title="Protocolo Basado en Directorios en Sistemas Multiprocesador", layout=layout)
 
@@ -322,7 +324,8 @@ def generateInstruction(procinstrdata, window):
             data = round(generator.uniform(0, 65535))
             instruction = generateWrite(processor, address, data)
         window["ultimaInstruccion"].update(instruction)
-        #analyzeInstruction(instruction, procinstrdata)
+        if not debug:
+            analyzeInstruction(instruction, procinstrdata)
         return instruction
 
     return ""
@@ -386,12 +389,15 @@ def main():
         updateMemoryData(memory)
 
         if not pause:
-            if (instruction == ""):
-                instruction = generateInstruction(instructionsHolder, window)
+            if not debug:
+                generateInstruction(instructionsHolder, window)
             else:
-                if event == "debug":
-                    analyzeInstruction(instruction, instructionsHolder)
-                    instruction = ""
+                if (instruction == ""):
+                    instruction = generateInstruction(instructionsHolder, window)
+                else:
+                    if event == "debug":
+                        analyzeInstruction(instruction, instructionsHolder)
+                        instruction = ""
 
     window.close()
 
