@@ -7,11 +7,12 @@ import random
 import time
 
 class Control:
-    def __init__(self, l1cdata, l2cache, memory):
+    def __init__(self, l1cdata, l2cache, memory, mutex):
         self.l1cache = l1c.L1Cache()
         self.l1cdata = l1cdata
         self.l2cache = l2cache
         self.memory = memory
+        self.mutex = mutex
 
         self.l1getCoherence0Dictionary = {
             0: self.l1cdata.getCoherence00,
@@ -155,11 +156,13 @@ class Control:
         if (coherence == "I"):
             return self.handleMissRead(procNumber, address, l1block, l1set)
         elif (address == l1block.getAddress()):
+            print("P" + str(procNumber) + ": Hit de Lectura de la Caché L1")
             return l1block.getData()
         else:
             return self.handleMissRead(procNumber, address, l1block, l1set)
 
     def handleMissRead(self, procNumber, address, l1block, l1set):
+        print("P" + str(procNumber) + ": Miss de Lectura de la Caché L1")
         l2set = self.l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
@@ -170,12 +173,14 @@ class Control:
                 j = i
                 i += 1
             elif (l2block.getAddress() == address):
+                print("P" + str(procNumber) + ": Hit de Lectura de la Caché L2")
+
                 if (l1block.getCoherence() != "I"):
                     l2blocks.remove(l2block)
                     oldL2block = l2blocks[0]
                     oldSharers = oldL2block.getSharers()
                     if (oldL2block.getCoherence() == "DM" and oldL2block.getOwner() == procNumber):
-                        self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                        self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData(), procNumber)
                         self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
                     elif (oldL2block.getCoherence() == "DS"):
                         if procNumber in oldSharers:
@@ -194,7 +199,7 @@ class Control:
 
                 sharers = []
                 if (l2block.getCoherence() == "DM"):
-                    self.setDataToMemory(l2block.getAddress(), l2block.getData())
+                    self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
                     self.updateHolderCache(l2block.getOwner(), l1set)
                     sharers.append(l2block.getOwner())
                     sharers.append(procNumber)
@@ -212,12 +217,13 @@ class Control:
             else:
                 i += 1
 
+        print("P" + str(procNumber) + ": Miss de Lectura de la Caché L2")
         if (j == -1):
             j = random.randint(0, 1)
 
         l2block = l2blocks[j]
         if (l2block.getCoherence() == "DM"):
-            self.setDataToMemory(l2block.getAddress(), l2block.getData())
+            self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
             self.handleCacheInvalidations([l2block.getOwner()], l1set)
 
         if (l2block.getCoherence() == "DS"):
@@ -236,10 +242,10 @@ class Control:
             l2blocks.remove(l2block)
             oldL2block = l2blocks[0]
             if (oldL2block.getOwner() == procNumber):
-                self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData(), procNumber)
                 self.setL2Block(oldL2block, "DI", -1, [], oldL2block.getAddress(), oldL2block.getData())
 
-        data = self.getDataFromMemory(address)
+        data = self.getDataFromMemory(address, procesor)
 
         self.setL2Block(l2block, "DS", -1, [procNumber], address, data)
         self.setL1Block(l1block, "S", address, data)
@@ -252,6 +258,7 @@ class Control:
         if (coherence == "I" or coherence == "S"):
             return self.handleMissWrite(procNumber, address, data, l1block, l1set)
         elif (address == l1block.getAddress()):
+            print("P" + str(procNumber) + ": Hit de Escritura de la Caché L1")
             return self.handleWriteHit(procNumber, address, data, l1block, l1set)
         else:
             return self.handleMissWrite(procNumber, address, data, l1block, l1set)
@@ -263,7 +270,7 @@ class Control:
         while (i != len(l2blocks)):
             l2block = l2blocks[i]
             if (l2block.getOwner() == procNumber):
-                self.setDataToMemory(l2block.getAddress(), l2block.getData())
+                self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
                 self.setL2Block(l2block, "DM", procNumber, [], address, data)
                 l1block.setData(data)
                 self.updateHolderCache(procNumber, l1set)
@@ -271,6 +278,7 @@ class Control:
             i += 1
 
     def handleMissWrite(self, procNumber, address, data, l1block, l1set):
+        print("P" + str(procNumber) + ": Miss de Escritura de la Caché L1")
         l2set = self.l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
@@ -281,15 +289,16 @@ class Control:
                 j = i
                 i += 1
             elif (l2block.getAddress() == address):
+                print("P" + str(procNumber) + ": Hit de Escritura de la Caché L2")
                 if (l2block.getOwner() != -1):
-                    self.setDataToMemory(l2block.getAddress(), l2block.getData())
+                    self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
                     self.invalidateHolderCache(l2block.getOwner(), l1set)
                 
                 l2blocks.remove(l2block)
                 oldL2block = l2blocks[0]
                 oldSharers = oldL2block.getSharers()
                 if (oldL2block.getCoherence() == "DM" and oldL2block.getOwner() == procNumber):
-                    self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                    self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData(), procNumber)
                     self.setL2Block(oldL2block, "DI", oldL2block.getOwner(), [], oldL2block.getAddress(), oldL2block.getData())
                 elif (oldL2block.getCoherence() == "DS"):
                         if procNumber in oldSharers:
@@ -318,14 +327,15 @@ class Control:
         i = 0
         while (i != len(l2blocks)):
             if (l2block.getOwner() == procNumber):
-                self.setDataToMemory(l2block.getAddress(), l2block.getData())
+                print("P" + str(procNumber) + ": Hit de Escritura de la Caché L2")
+                self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
                 self.setL2Block(l2block, "DM", procNumber, [], address, data)
                 self.setL1Block(l1block, "M", address, data)
                 self.updateHolderCache(procNumber, l1set)
                 return
             i += 1
 
-
+        print("P" + str(procNumber) + ": Miss de Escritura de la Caché L2")
         if (j == -1):
             j = random.randint(0, 1)
 
@@ -333,7 +343,7 @@ class Control:
         l2blockCoherence = l2block.getCoherence()
 
         if (l2blockCoherence == "DM"):
-            self.setDataToMemory(l2block.getAddress(), l2block.getData())
+            self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
             self.invalidateHolderCache(l2block.getOwner(), l1set)   
 
         if (l2blockCoherence == "DS"):
@@ -352,7 +362,7 @@ class Control:
             l2blocks.remove(l2block)
             oldL2block = l2blocks[0]
             if (oldL2block.getOwner() == procNumber):
-                self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData())
+                self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData(), procNumber)
                 self.setL2Block(oldL2block, "DI", -1, [], oldL2block.getAddress(), oldL2block.getData())
 
         self.setL2Block(l2block, "DM", procNumber, [], address, data)
@@ -367,13 +377,22 @@ class Control:
         
         return
 
-    def getDataFromMemory(self, address):
+    def getDataFromMemory(self, address, procesor):
+        self.mutex.acquire()
+        print("P" + str(procNumber) + ": Accediendo a Memoria para leer los datos")
+        time.sleep(5)
         memblock = self.memory.getBlockByNumber(address)
-        return memblock.getData()
+        data = memblock.getData()
+        self.mutex.release()
+        return data
 
-    def setDataToMemory(self, address, data):
+    def setDataToMemory(self, address, data, procNumber):
+        self.mutex.acquire()
+        print("P" + str(procNumber) + ": Accediendo a Memoria para almacenar datos a reemplazar")
+        time.sleep(5)
         memblock = self.memory.getBlockByNumber(address)
         memblock.setData(data)
+        self.mutex.release()
         return
 
     def setL2Block(self, l2block, coherence, owner, sharers, address, data):

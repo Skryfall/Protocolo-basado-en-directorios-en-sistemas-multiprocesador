@@ -5,9 +5,9 @@ import time
 from multiprocessing import Process
 
 class Procesor:
-    def __init__(self, number, memory, l2cache, instructionsHolder, l1cachedataholder):
+    def __init__(self, number, memory, l2cache, instructionsHolder, l1cachedataholder, mutex):
         self.number = number
-        self.control = ctrl.Control(l1cachedataholder, l2cache, memory)
+        self.control = ctrl.Control(l1cachedataholder, l2cache, memory, mutex)
         self.instrData = instructionsHolder
         self.memory = memory
         self.l2cache = l2cache

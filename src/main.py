@@ -265,15 +265,15 @@ def updateMemoryData(memory):
 
     return  
 
-def createProcessorsAux(number, memory, l2cache, instructionsHolder, l1cachedataholder):
-    procesor = proc.Procesor(number, memory, l2cache, instructionsHolder, l1cachedataholder)
+def createProcessorsAux(number, memory, l2cache, instructionsHolder, l1cachedataholder, mutex):
+    procesor = proc.Procesor(number, memory, l2cache, instructionsHolder, l1cachedataholder, mutex)
     procesor.readOperation()
 
-def createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder):
-    Process(target=createProcessorsAux, args=(0, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
-    Process(target=createProcessorsAux, args=(1, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
-    Process(target=createProcessorsAux, args=(2, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
-    Process(target=createProcessorsAux, args=(3, memory, l2cache, instructionsHolder, l1cachedataholder), daemon=True).start()
+def createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder, mutex):
+    Process(target=createProcessorsAux, args=(0, memory, l2cache, instructionsHolder, l1cachedataholder, mutex,), daemon=True).start()
+    Process(target=createProcessorsAux, args=(1, memory, l2cache, instructionsHolder, l1cachedataholder, mutex,), daemon=True).start()
+    Process(target=createProcessorsAux, args=(2, memory, l2cache, instructionsHolder, l1cachedataholder, mutex,), daemon=True).start()
+    Process(target=createProcessorsAux, args=(3, memory, l2cache, instructionsHolder, l1cachedataholder, mutex,), daemon=True).start()
 
     return
 
@@ -333,8 +333,9 @@ def main():
     l2cache = l2c.L2Cache(manager)
     instructionsHolder = ih.InstructionsHolder(manager)
     l1cachedataholder = l1c.L1CacheDataHolder(manager)
+    mutex = manager.Lock()
 
-    createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder)
+    createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder, mutex)
     instruction = ""
     pause = True
 
