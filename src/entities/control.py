@@ -7,12 +7,11 @@ import random
 import time
 
 class Control:
-    def __init__(self, l1cdata, l2cache, memory, mutex):
+    def __init__(self, l1cdata, l2cache, memory):
         self.l1cache = l1c.L1Cache()
         self.l1cdata = l1cdata
         self.l2cache = l2cache
         self.memory = memory
-        self.mutex = mutex
 
         self.l1getCoherence0Dictionary = {
             0: self.l1cdata.getCoherence00,
@@ -154,17 +153,13 @@ class Control:
     def handleRead(self, procNumber, address, l1block, l1set):
         coherence = l1block.getCoherence()
         if (coherence == "I"):
-            self.mutex.acquire()
             self.handleMissRead(procNumber, address, l1block, l1set)
-            self.mutex.release()
             return
         elif (address == l1block.getAddress()):
             print("P" + str(procNumber) + ": Hit de Lectura de la Caché L1\n")
             return l1block.getData()
         else:
-            self.mutex.acquire()
             self.handleMissRead(procNumber, address, l1block, l1set)
-            self.mutex.release()
             return 
 
     def handleMissRead(self, procNumber, address, l1block, l1set):
@@ -262,20 +257,14 @@ class Control:
     def handleWrite(self, procNumber, address, data, l1block, l1set):
         coherence = l1block.getCoherence()
         if (coherence == "I" or coherence == "S"):
-            self.mutex.acquire()
             self.handleMissWrite(procNumber, address, data, l1block, l1set)
-            self.mutex.release()
             return
         elif (address == l1block.getAddress()):
             print("P" + str(procNumber) + ": Hit de Escritura de la Caché L1\n")
-            self.mutex.acquire()
             self.handleWriteHit(procNumber, address, data, l1block, l1set)
-            self.mutex.release()
             return 
         else:
-            self.mutex.acquire()
             self.handleMissWrite(procNumber, address, data, l1block, l1set)
-            self.mutex.release()
             return
 
     def handleWriteHit(self, procNumber, address, data, l1block, l1set):
