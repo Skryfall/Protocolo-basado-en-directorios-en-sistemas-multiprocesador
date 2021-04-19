@@ -1,18 +1,12 @@
 import PySimpleGUI as sg
-from multiprocessing import Process, Manager, Value
-import math
-import random
-import numpy as np
+from multiprocessing import Process, Manager, Value, Lock
 
 from entities import l1cachedataholder as l1c
 from entities import instructionsholder as ih
 from entities import l2cache as l2c
 from entities import memory as mem
 from entities import procesor as proc
-
-debug = False
-
-generator = np.random.default_rng()
+import instructiongenerator as ig
 
 sg.theme("Reds")
 
@@ -145,9 +139,9 @@ layout = [ [sg.Column(layout=proc0Column, element_justification="center", key="p
            [sg.Text(text="Set 0", size=(70, 1), justification="center", font=("Any", 10)), sg.Text(text="Set 1", size=(50, 1), justification="center", font=("Any", 10))],
            [sg.Column(layout=bloq0L2Column, element_justification="center"), sg.Column(layout=bloq1L2Column, element_justification="center"), sg.Column(layout=bloq2L2Column, element_justification="center"), sg.Column(layout=bloq3L2Column, element_justification="center")],
            [sg.Text(text="Contenido de la Memoria", size=(105, 1), justification="center", font=("Any", 10)), sg.Text(text="Última Instrucción Generada:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="center", font=("Any", 10), key="ultimaInstruccion")],
-           [sg.Column(layout=bloq0MemColumn, element_justification="center"), sg.Column(layout=bloq1MemColumn, element_justification="center"), sg.Column(layout=bloq2MemColumn, element_justification="center"), sg.Column(layout=bloq3MemColumn, element_justification="center"), sg.Column(layout=bloq4MemColumn, element_justification="center"), sg.Column(layout=bloq5MemColumn, element_justification="center"), sg.Column(layout=bloq6MemColumn, element_justification="center"), sg.Column(layout=bloq7MemColumn, element_justification="center"), sg.Text(text="Siguiente Instrucción Manual:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="left", font=("Any", 10), key="siguienteInstruccion")],
-           [sg.Button(button_text="Ejecución Continua", font=("Any", 10), disabled=False, key="reanudar"), sg.Button(button_text="Pausa", font=("Any", 10), disabled=True, key="pausa"), sg.Button(button_text="Paso", font=("Any", 10), disabled=False, key="paso"), sg.InputText(disabled=False, key="nuevaInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptar")],
-           [sg.Text(text="Introducir Tiempo de Ejecución por Instrucción en Segundos: ", justification="center", font=("Any", 10)), sg.InputText(disabled=False, key="tiempoInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptartiempo"), sg.Text(text="Tiempo Actual: ", justification="center", font=("Any", 10)), sg.Text(text="XX", justification="left", font=("Any", 10), key="tiempoactual"), sg.Text(text=" segundos", justification="center", font=("Any", 10)), sg.Button(button_text="DEBUG", font=("Any", 10), disabled=False, key="debug", visible=debug)] ]
+           [sg.Column(layout=bloq0MemColumn, element_justification="center"), sg.Column(layout=bloq1MemColumn, element_justification="center"), sg.Column(layout=bloq2MemColumn, element_justification="center"), sg.Column(layout=bloq3MemColumn, element_justification="center"), sg.Column(layout=bloq4MemColumn, element_justification="center"), sg.Column(layout=bloq5MemColumn, element_justification="center"), sg.Column(layout=bloq6MemColumn, element_justification="center"), sg.Column(layout=bloq7MemColumn, element_justification="center"), sg.Text(text="Siguiente Instrucción:", size=(40, 1), justification="center", font=("Any", 10)), sg.Text(text="XX: XXXXX XXX;XXXX", justification="left", font=("Any", 10), key="siguienteInstruccion")],
+           [sg.Button(button_text="Ejecución Continua Individual", font=("Any", 10), disabled=False, key="individual"), sg.Button(button_text="Ejecución Continua Simultanea", font=("Any", 10), disabled=False, key="simultanea"), sg.Button(button_text="Pausa", font=("Any", 10), disabled=True, key="pausa"), sg.Button(button_text="Paso", font=("Any", 10), disabled=False, key="paso"), sg.InputText(disabled=False, key="nuevaInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptar"), sg.Button(button_text="Generar Individual", font=("Any", 10), disabled=False, key="geni"), sg.Button(button_text="Generar Simultanea", font=("Any", 10), disabled=False, key="gens")],
+           [sg.Text(text="Introducir Tiempo de Ejecución por Instrucción en Segundos: ", justification="center", font=("Any", 10)), sg.InputText(disabled=False, key="tiempoInstruccion"), sg.Button(button_text="Aceptar", font=("Any", 10), disabled=False, key="aceptartiempo"), sg.Text(text="Tiempo Actual: ", justification="center", font=("Any", 10)), sg.Text(text="XX", justification="left", font=("Any", 10), key="tiempoactual"), sg.Text(text=" segundos", justification="center", font=("Any", 10))] ]
 
 window = sg.Window(title="Protocolo Basado en Directorios en Sistemas Multiprocesador", layout=layout)
 
@@ -268,7 +262,7 @@ def updateMemoryData(memory):
     return  
 
 def createProcessorsAux(number, memory, l2cache, instructionsHolder, l1cachedataholder, mutex):
-    procesor = proc.Procesor(number, memory, l2cache, instructionsHolder, l1cachedataholder, mutex)
+    procesor = proc.Procesor(number, memory, l2cache, instructionsHolder, l1cachedataholder, mutex, ig.InstructionGenerator())
     procesor.readOperation()
 
 def createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder, mutex):
@@ -285,50 +279,22 @@ def analyzeInstruction(instruction, procinstrdata):
     if (procesor == "p0"):
         procinstrdata.setInstruction0(instruction[4:])
         procinstrdata.setInstruction0Read(0)
-        return
+        return 0
     elif (procesor == "p1"):
         procinstrdata.setInstruction1(instruction[4:])
         procinstrdata.setInstruction1Read(0)
-        return
+        return 0
     elif (procesor == "p2"):
         procinstrdata.setInstruction2(instruction[4:])
         procinstrdata.setInstruction2Read(0)
-        return
+        return 0
     elif (procesor == "p3"):
         procinstrdata.setInstruction3(instruction[4:])
         procinstrdata.setInstruction3Read(0)
-        return
+        return 0
     else:
-        print("Instrucción no Valida, el nombre del Procesador es incorrecto")
-        return
-
-def generateCalc(processor):
-    return "p" + str(processor) + ": calc"
-
-def generateRead(processor, address):
-    return "p" + str(processor) + ": read " + decimalToBinary(address)
-
-def generateWrite(processor, address, data):
-    return "p" + str(processor) + ": write " + decimalToBinary(address) + ";" + decimalToHexadecimal(data)
-
-def generateInstruction(procinstrdata, window):
-    if (procinstrdata.getInstruction0Read() == 1 and procinstrdata.getInstruction1Read() == 1 and procinstrdata.getInstruction2Read() == 1 and procinstrdata.getInstruction3Read() == 1):
-        processor = round(generator.uniform(0, 3))
-        instructionType = round(generator.uniform(0, 2))
-        if (instructionType == 0):
-            instruction = generateCalc(processor)
-        address = round(generator.uniform(0, 7))
-        if (instructionType == 1):
-            instruction = generateRead(processor, address)
-        if (instructionType == 2):
-            data = round(generator.uniform(0, 65535))
-            instruction = generateWrite(processor, address, data)
-        window["ultimaInstruccion"].update(instruction)
-        if not debug:
-            analyzeInstruction(instruction, procinstrdata)
-        return instruction
-
-    return ""
+        print("Instrucción no Valida, el nombre del Procesador es incorrecto\n")
+        return 1
 
 def main():
     manager = Manager()
@@ -336,41 +302,87 @@ def main():
     l2cache = l2c.L2Cache(manager)
     instructionsHolder = ih.InstructionsHolder(manager)
     l1cachedataholder = l1c.L1CacheDataHolder(manager)
-    mutex = manager.Lock()
+    mutex = Lock()
 
     createProcessors(memory, l2cache, instructionsHolder, l1cachedataholder, mutex)
+
+    generator = ig.InstructionGenerator()
     instruction = ""
     pause = True
+    individual = True
 
     while True:
         event, values = window.read(timeout=100)
         if event == sg.WIN_CLOSED or event == "Cancel":
             break
         if event == "pausa":
-            window["reanudar"].update(disabled=False)
+            window["individual"].update(disabled=False)
+            window["simultanea"].update(disabled=False)
             window["pausa"].update(disabled=True)
             window["paso"].update(disabled=False)
+            window["geni"].update(disabled=False)
+            window["gens"].update(disabled=False)
             window["nuevaInstruccion"].update(disabled=False)
             window["aceptar"].update(disabled=False)
             pause = True
-        if event == "reanudar":
-            window["reanudar"].update(disabled=True)
+            individual = True
+            instructionsHolder.setInstruction0Read(1)
+            instructionsHolder.setInstruction1Read(1)
+            instructionsHolder.setInstruction2Read(1)
+            instructionsHolder.setInstruction3Read(1)
+            instructionsHolder.setAutoGeneratedInstruction0(0)
+            instructionsHolder.setAutoGeneratedInstruction1(0)
+            instructionsHolder.setAutoGeneratedInstruction2(0)
+            instructionsHolder.setAutoGeneratedInstruction3(0)
+        if event == "individual":
+            window["individual"].update(disabled=True)
+            window["simultanea"].update(disabled=True)
             window["pausa"].update(disabled=False)
             window["paso"].update(disabled=True)
+            window["geni"].update(disabled=True)
+            window["gens"].update(disabled=True)
             window["nuevaInstruccion"].update(disabled=True)
             window["aceptar"].update(disabled=True)
             pause = False
+            individual = True
+        if event == "simultanea":
+            window["individual"].update(disabled=True)
+            window["simultanea"].update(disabled=True)
+            window["pausa"].update(disabled=False)
+            window["paso"].update(disabled=True)
+            window["geni"].update(disabled=True)
+            window["gens"].update(disabled=True)
+            window["nuevaInstruccion"].update(disabled=True)
+            window["aceptar"].update(disabled=True)
+            pause = False
+            individual = False
         if event == "aceptar":
             instruction = values["nuevaInstruccion"].lower()
             window["siguienteInstruccion"].update(instruction)
+            individual = True
         if event == "paso":
-            if (instruction != ""):
-                analyzeInstruction(instruction, instructionsHolder)
-                window["ultimaInstruccion"].update(instruction)
+            if not (individual):
+                instructionsHolder.setInstruction0Read(0)
+                instructionsHolder.setInstruction1Read(0)
+                instructionsHolder.setInstruction2Read(0)
+                instructionsHolder.setInstruction3Read(0)
+            elif (instruction != ""):
+                if not analyzeInstruction(instruction, instructionsHolder):
+                    window["ultimaInstruccion"].update(instruction)
                 instruction = ""
                 window["siguienteInstruccion"].update(instruction)
             else:
                 print("Por favor inserte una instrucción")
+        if event == "geni":
+            individual = True
+            instruction = generator.generateInstructionForProcessor()
+            window["siguienteInstruccion"].update(instruction)
+        if event == "gens":
+            individual = False
+            instructionsHolder.setAutoGeneratedInstruction0(1)
+            instructionsHolder.setAutoGeneratedInstruction1(1)
+            instructionsHolder.setAutoGeneratedInstruction2(1)
+            instructionsHolder.setAutoGeneratedInstruction3(1)
         if event == "aceptartiempo":
             time = values["tiempoInstruccion"]
             if (time != ""):
@@ -379,26 +391,34 @@ def main():
                     if (time < 100):
                         instructionsHolder.setInstructionTime(time)
                     else:
-                        print("Por favor inserte un tiempo menor")
+                        print("Por favor inserte un tiempo menor\n")
                 except:
-                    print("Por favor inserte un tiempo válido")
+                    print("Por favor inserte un tiempo válido\n")
             else:
-                print("Por favor inserte un tiempo")
+                print("Por favor inserte un tiempo\n")
 
         updateL1Data(l1cachedataholder, instructionsHolder)
         updateL2Data(l2cache)        
         updateMemoryData(memory)
 
         if not pause:
-            if not debug:
-                generateInstruction(instructionsHolder, window)
-            else:
-                if (instruction == ""):
-                    instruction = generateInstruction(instructionsHolder, window)
-                else:
-                    if event == "debug":
-                        analyzeInstruction(instruction, instructionsHolder)
-                        instruction = ""
+            if individual and instructionsHolder.getInstruction0Read() and instructionsHolder.getInstruction1Read() and instructionsHolder.getInstruction2Read() and instructionsHolder.getInstruction3Read():
+                instructionsHolder.setAutoGeneratedInstruction0(0)
+                instructionsHolder.setAutoGeneratedInstruction1(0)
+                instructionsHolder.setAutoGeneratedInstruction2(0)
+                instructionsHolder.setAutoGeneratedInstruction3(0)
+                instruction = generator.generateInstructionForProcessor()
+                window["ultimaInstruccion"].update(instruction)
+                analyzeInstruction(instruction, instructionsHolder)
+            elif not individual:
+                instructionsHolder.setAutoGeneratedInstruction0(1)
+                instructionsHolder.setAutoGeneratedInstruction1(1)
+                instructionsHolder.setAutoGeneratedInstruction2(1)
+                instructionsHolder.setAutoGeneratedInstruction3(1)
+                instructionsHolder.setInstruction0Read(0)
+                instructionsHolder.setInstruction1Read(0)
+                instructionsHolder.setInstruction2Read(0)
+                instructionsHolder.setInstruction3Read(0)
 
     window.close()
 

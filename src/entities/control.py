@@ -154,15 +154,21 @@ class Control:
     def handleRead(self, procNumber, address, l1block, l1set):
         coherence = l1block.getCoherence()
         if (coherence == "I"):
-            return self.handleMissRead(procNumber, address, l1block, l1set)
+            self.mutex.acquire()
+            self.handleMissRead(procNumber, address, l1block, l1set)
+            self.mutex.release()
+            return
         elif (address == l1block.getAddress()):
-            print("P" + str(procNumber) + ": Hit de Lectura de la Caché L1")
+            print("P" + str(procNumber) + ": Hit de Lectura de la Caché L1\n")
             return l1block.getData()
         else:
-            return self.handleMissRead(procNumber, address, l1block, l1set)
+            self.mutex.acquire()
+            self.handleMissRead(procNumber, address, l1block, l1set)
+            self.mutex.release()
+            return 
 
     def handleMissRead(self, procNumber, address, l1block, l1set):
-        print("P" + str(procNumber) + ": Miss de Lectura de la Caché L1")
+        print("P" + str(procNumber) + ": Miss de Lectura de la Caché L1\n")
         l2set = self.l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
@@ -173,7 +179,7 @@ class Control:
                 j = i
                 i += 1
             elif (l2block.getAddress() == address):
-                print("P" + str(procNumber) + ": Hit de Lectura de la Caché L2")
+                print("P" + str(procNumber) + ": Hit de Lectura de la Caché L2\n")
 
                 if (l1block.getCoherence() != "I"):
                     l2blocks.remove(l2block)
@@ -217,7 +223,7 @@ class Control:
             else:
                 i += 1
 
-        print("P" + str(procNumber) + ": Miss de Lectura de la Caché L2")
+        print("P" + str(procNumber) + ": Miss de Lectura de la Caché L2\n")
         if (j == -1):
             j = random.randint(0, 1)
 
@@ -245,7 +251,7 @@ class Control:
                 self.setDataToMemory(oldL2block.getAddress(), oldL2block.getData(), procNumber)
                 self.setL2Block(oldL2block, "DI", -1, [], oldL2block.getAddress(), oldL2block.getData())
 
-        data = self.getDataFromMemory(address, procesor)
+        data = self.getDataFromMemory(address, procNumber)
 
         self.setL2Block(l2block, "DS", -1, [procNumber], address, data)
         self.setL1Block(l1block, "S", address, data)
@@ -256,12 +262,21 @@ class Control:
     def handleWrite(self, procNumber, address, data, l1block, l1set):
         coherence = l1block.getCoherence()
         if (coherence == "I" or coherence == "S"):
-            return self.handleMissWrite(procNumber, address, data, l1block, l1set)
+            self.mutex.acquire()
+            self.handleMissWrite(procNumber, address, data, l1block, l1set)
+            self.mutex.release()
+            return
         elif (address == l1block.getAddress()):
-            print("P" + str(procNumber) + ": Hit de Escritura de la Caché L1")
-            return self.handleWriteHit(procNumber, address, data, l1block, l1set)
+            print("P" + str(procNumber) + ": Hit de Escritura de la Caché L1\n")
+            self.mutex.acquire()
+            self.handleWriteHit(procNumber, address, data, l1block, l1set)
+            self.mutex.release()
+            return 
         else:
-            return self.handleMissWrite(procNumber, address, data, l1block, l1set)
+            self.mutex.acquire()
+            self.handleMissWrite(procNumber, address, data, l1block, l1set)
+            self.mutex.release()
+            return
 
     def handleWriteHit(self, procNumber, address, data, l1block, l1set):
         l2set = self.l2cache.getL2SetByNumber(l1set)
@@ -278,7 +293,7 @@ class Control:
             i += 1
 
     def handleMissWrite(self, procNumber, address, data, l1block, l1set):
-        print("P" + str(procNumber) + ": Miss de Escritura de la Caché L1")
+        print("P" + str(procNumber) + ": Miss de Escritura de la Caché L1\n")
         l2set = self.l2cache.getL2SetByNumber(l1set)
         l2blocks = l2set.getAllBlocks()
         i = 0
@@ -289,7 +304,7 @@ class Control:
                 j = i
                 i += 1
             elif (l2block.getAddress() == address):
-                print("P" + str(procNumber) + ": Hit de Escritura de la Caché L2")
+                print("P" + str(procNumber) + ": Hit de Escritura de la Caché L2\n")
                 if (l2block.getOwner() != -1):
                     self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
                     self.invalidateHolderCache(l2block.getOwner(), l1set)
@@ -327,7 +342,7 @@ class Control:
         i = 0
         while (i != len(l2blocks)):
             if (l2block.getOwner() == procNumber):
-                print("P" + str(procNumber) + ": Hit de Escritura de la Caché L2")
+                print("P" + str(procNumber) + ": Hit de Escritura de la Caché L2\n")
                 self.setDataToMemory(l2block.getAddress(), l2block.getData(), procNumber)
                 self.setL2Block(l2block, "DM", procNumber, [], address, data)
                 self.setL1Block(l1block, "M", address, data)
@@ -335,7 +350,7 @@ class Control:
                 return
             i += 1
 
-        print("P" + str(procNumber) + ": Miss de Escritura de la Caché L2")
+        print("P" + str(procNumber) + ": Miss de Escritura de la Caché L2\n")
         if (j == -1):
             j = random.randint(0, 1)
 
@@ -377,22 +392,18 @@ class Control:
         
         return
 
-    def getDataFromMemory(self, address, procesor):
-        self.mutex.acquire()
-        print("P" + str(procNumber) + ": Accediendo a Memoria para leer los datos")
+    def getDataFromMemory(self, address, procNumber):
+        print("P" + str(procNumber) + ": Accediendo a Memoria para leer los datos\n")
         time.sleep(5)
         memblock = self.memory.getBlockByNumber(address)
         data = memblock.getData()
-        self.mutex.release()
         return data
 
     def setDataToMemory(self, address, data, procNumber):
-        self.mutex.acquire()
-        print("P" + str(procNumber) + ": Accediendo a Memoria para almacenar datos a reemplazar")
+        print("P" + str(procNumber) + ": Accediendo a Memoria para almacenar datos a reemplazar\n")
         time.sleep(5)
         memblock = self.memory.getBlockByNumber(address)
         memblock.setData(data)
-        self.mutex.release()
         return
 
     def setL2Block(self, l2block, coherence, owner, sharers, address, data):
