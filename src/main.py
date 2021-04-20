@@ -12,7 +12,8 @@ sg.theme("Reds")
 
 proc0Column = [ [sg.Text(text="Procesador 0", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
-                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion0")],
+                [sg.Text(text="Ejecutando: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion0")],
+                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="oinstruccion0")],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
                 [sg.Text(text="Contenido de la Caché L1", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
@@ -30,7 +31,8 @@ proc0Column = [ [sg.Text(text="Procesador 0", justification="center", font=("Any
 
 proc1Column = [ [sg.Text(text="Procesador 1", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
-                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion1")],
+                [sg.Text(text="Ejecutando: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion1")],
+                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="oinstruccion1")],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
                 [sg.Text(text="Contenido de la Caché L1", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
@@ -48,7 +50,8 @@ proc1Column = [ [sg.Text(text="Procesador 1", justification="center", font=("Any
 
 proc2Column = [ [sg.Text(text="Procesador 2", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
-                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion2")],
+                [sg.Text(text="Ejecutando: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion2")],
+                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="oinstruccion2")],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
                 [sg.Text(text="Contenido de la Caché L1", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
@@ -66,7 +69,8 @@ proc2Column = [ [sg.Text(text="Procesador 2", justification="center", font=("Any
 
 proc3Column = [ [sg.Text(text="Procesador 3", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
-                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion3")],
+                [sg.Text(text="Ejecutando: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="instruccion3")],
+                [sg.Text(text="Últ. Ejec.: ", justification="left", font=("Any", 10)), sg.Text(text="XXXXX XXX;XXXX", justification="right", font=("Any", 10), key="oinstruccion3")],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
                 [sg.Text(text="Contenido de la Caché L1", justification="center", font=("Any", 10))],
                 [sg.Text(text="-----------------------------------------------------------------------------------", justification="center")],
@@ -173,6 +177,7 @@ def updateL1Data(l1cachedata, procinstrdata):
     window["tiempoactual"].update(procinstrdata.getInstructionTime())
 
     window["instruccion0"].update(procinstrdata.getInstruction0())
+    window["oinstruccion0"].update(procinstrdata.getOldInstruction0())
     window["l1coherencia00"].update(l1cachedata.getCoherence00())
     window["l1direccion00"].update(decimalToBinary(l1cachedata.getAddress00()))
     window["l1dato00"].update(decimalToHexadecimal(l1cachedata.getData00()))
@@ -181,6 +186,7 @@ def updateL1Data(l1cachedata, procinstrdata):
     window["l1dato01"].update(decimalToHexadecimal(l1cachedata.getData01()))
 
     window["instruccion1"].update(procinstrdata.getInstruction1())
+    window["oinstruccion1"].update(procinstrdata.getOldInstruction1())
     window["l1coherencia10"].update(l1cachedata.getCoherence10())
     window["l1direccion10"].update(decimalToBinary(l1cachedata.getAddress10()))
     window["l1dato10"].update(decimalToHexadecimal(l1cachedata.getData10()))
@@ -189,6 +195,7 @@ def updateL1Data(l1cachedata, procinstrdata):
     window["l1dato11"].update(decimalToHexadecimal(l1cachedata.getData11()))
 
     window["instruccion2"].update(procinstrdata.getInstruction2())
+    window["oinstruccion2"].update(procinstrdata.getOldInstruction2())
     window["l1coherencia20"].update(l1cachedata.getCoherence20())
     window["l1direccion20"].update(decimalToBinary(l1cachedata.getAddress20()))
     window["l1dato20"].update(decimalToHexadecimal(l1cachedata.getData20()))
@@ -197,6 +204,7 @@ def updateL1Data(l1cachedata, procinstrdata):
     window["l1dato21"].update(decimalToHexadecimal(l1cachedata.getData21()))
 
     window["instruccion3"].update(procinstrdata.getInstruction3())
+    window["oinstruccion3"].update(procinstrdata.getOldInstruction3())
     window["l1coherencia30"].update(l1cachedata.getCoherence30())
     window["l1direccion30"].update(decimalToBinary(l1cachedata.getAddress30()))
     window["l1dato30"].update(decimalToHexadecimal(l1cachedata.getData30()))

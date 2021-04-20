@@ -41,7 +41,14 @@ class Procesor:
             2: self.instrData.setInstruction2,
             3: self.instrData.setInstruction3
         }
-                                                                              
+
+        self.setOldInstructionDictionary = {
+            0: self.instrData.setOldInstruction0,
+            1: self.instrData.setOldInstruction1,
+            2: self.instrData.setOldInstruction2,
+            3: self.instrData.setOldInstruction3
+        }
+
         self.getInstructionReadDictionary = {
             0: self.instrData.getInstruction0Read,
             1: self.instrData.getInstruction1Read,
@@ -137,6 +144,8 @@ class Procesor:
                         self.control.handleOperation("W", self.number, address, data)
                         self.mutex.release()
                         time.sleep(wait)
+                        self.setInstructionDictionary.get(self.number)("")
+                        self.setOldInstructionDictionary.get(self.number)(instr)
                         print("P" + str(self.number) + ": Instrucción ejecutada\n")
                     self.setInstructionReadDictionary.get(self.number)(1)
                 elif (instr[:4] == "read"):
@@ -148,12 +157,16 @@ class Procesor:
                         self.control.handleOperation("R", self.number, address, -1)
                         self.mutex.release()
                         time.sleep(wait)
+                        self.setInstructionDictionary.get(self.number)("")
+                        self.setOldInstructionDictionary.get(self.number)(instr)
                         print("P" + str(self.number) + ": Instrucción ejecutada\n")
                     self.setInstructionReadDictionary.get(self.number)(1)
                 elif (instr[:4] == "calc"):
                     print("P" + str(self.number) + ": Instrucción a ejecutar: " + instr + "\n")
                     time.sleep(wait)
                     time.sleep(wait)
+                    self.setInstructionDictionary.get(self.number)("")
+                    self.setOldInstructionDictionary.get(self.number)(instr)
                     print("P" + str(self.number) + ": Instrucción ejecutada\n")
                     self.setInstructionReadDictionary.get(self.number)(1)
                 else:
