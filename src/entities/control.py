@@ -7,11 +7,12 @@ import random
 import time
 
 class Control:
-    def __init__(self, l1cdata, l2cache, memory):
+    def __init__(self, l1cdata, l2cache, memory, instructionsHolder):
         self.l1cache = l1c.L1Cache()
         self.l1cdata = l1cdata
         self.l2cache = l2cache
         self.memory = memory
+        self.instructionsHolder = instructionsHolder
 
         self.l1getCoherence0Dictionary = {
             0: self.l1cdata.getCoherence00,
@@ -381,16 +382,21 @@ class Control:
         
         return
 
+    def getMemoryTime(self):
+        return self.instructionsHolder.getInstructionTime()
+
     def getDataFromMemory(self, address, procNumber):
+        waitTime = self.getMemoryTime()
         print("P" + str(procNumber) + ": Accediendo a Memoria para leer los datos\n")
-        time.sleep(5)
+        time.sleep(waitTime + 5)
         memblock = self.memory.getBlockByNumber(address)
         data = memblock.getData()
         return data
 
     def setDataToMemory(self, address, data, procNumber):
+        waitTime = self.getMemoryTime()
         print("P" + str(procNumber) + ": Accediendo a Memoria para almacenar datos a reemplazar\n")
-        time.sleep(5)
+        time.sleep(waitTime + 5)
         memblock = self.memory.getBlockByNumber(address)
         memblock.setData(data)
         return
